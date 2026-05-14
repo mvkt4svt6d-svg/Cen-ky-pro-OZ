@@ -80,7 +80,7 @@ Načítám ceník...
 
 let data = [];
 
-fetch('Exportní cena HW 2025 Q3.xlsx')
+fetch('Exportpreisliste HW 2025 Q3.xlsx')
 .then(response => response.arrayBuffer())
 .then(dataBuffer => {
 
@@ -100,6 +100,7 @@ function hledej(){
 const hledat =
 document.getElementById('searchInput')
 .value
+.replace(/\s/g,'')
 .toLowerCase();
 
 let nalezeno = null;
@@ -108,8 +109,14 @@ for(let i = 0; i < data.length; i++){
 
 const row = data[i];
 
-if(row[0] &&
-row[0].toString().toLowerCase().includes(hledat)){
+if(
+row[0] &&
+row[0]
+.toString()
+.replace(/\s/g,'')
+.toLowerCase()
+.includes(hledat)
+){
 
 nalezeno = row;
 break;
