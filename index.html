@@ -84,14 +84,16 @@ let data = [];
 
 async function nactiCenik(){
 
+try{
+
 const response =
-await fetch('Exportpreisliste HW 2025 Q3.ods');
+await fetch('Reca ceník malý.ods');
 
 const buffer =
 await response.arrayBuffer();
 
 const workbook =
-XLSX.read(buffer, {
+XLSX.read(buffer,{
 type:'array'
 });
 
@@ -99,10 +101,19 @@ const sheet =
 workbook.Sheets[workbook.SheetNames[0]];
 
 data =
-XLSX.utils.sheet_to_json(sheet, {header:1});
+XLSX.utils.sheet_to_json(sheet,{
+header:1
+});
 
 document.getElementById('vysledek').innerHTML =
 "Ceník načten";
+
+}catch(error){
+
+document.getElementById('vysledek').innerHTML =
+"Chyba načítání ceníku";
+
+}
 
 }
 
@@ -110,13 +121,18 @@ nactiCenik();
 
 function formatCena(cena){
 
-cena = Number(cena);
+cena =
+String(cena)
+.replace(",", ".");
+
+cena =
+parseFloat(cena);
 
 if(isNaN(cena)){
     return "-";
 }
 
-return cena.toLocaleString('cs-CZ', {
+return cena.toLocaleString('cs-CZ',{
 minimumFractionDigits:2,
 maximumFractionDigits:2
 }) + " Kč";
@@ -143,11 +159,11 @@ return;
 
 let nalezeno = null;
 
-for(let i = 0; i < data.length; i++){
+for(let i = 1; i < data.length; i++){
 
 const row = data[i];
 
-if(!row || row.length === 0){
+if(!row){
     continue;
 }
 
@@ -156,7 +172,7 @@ String(row[0] || "")
 .replace(/\s/g,'')
 .toLowerCase();
 
-if(kod === hledat){
+if(kod.includes(hledat)){
 
 nalezeno = row;
 break;
@@ -174,38 +190,41 @@ return;
 
 }
 
-const nazev = nalezeno[1] || "-";
-const jednotka = nalezeno[2] || "-";
-const cena = formatCena(nalezeno[5]);
-const baleni = nalezeno[7] || "-";
+const nazev =
+nalezeno[1] || "-";
+
+const jednotka =
+nalezeno[2] || "-";
+
+const cena =
+formatCena(nalezeno[3]);
 
 document.getElementById('vysledek').innerHTML =
 
 `
 <div>
-<span class="label">Název produktu:</span><br>
+<span class="label">
+Název produktu:
+</span><br>
 ${nazev}
 </div>
 
 <br>
 
 <div>
-<span class="label">Cena CZK:</span><br>
+<span class="label">
+Cena CZK:
+</span><br>
 ${cena}
 </div>
 
 <br>
 
 <div>
-<span class="label">Cenová jednotka:</span><br>
+<span class="label">
+Cenová jednotka:
+</span><br>
 ${jednotka}
-</div>
-
-<br>
-
-<div>
-<span class="label">Počet ks v balení:</span><br>
-${baleni}
 </div>
 `;
 
