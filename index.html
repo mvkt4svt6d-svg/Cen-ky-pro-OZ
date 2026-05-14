@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ceník OZ</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+body{
+font-family:Arial;
+padding:20px;
+background:#111;
+color:white;
+}
+
+input,button{
+padding:12px;
+font-size:18px;
+margin:10px 0;
+width:100%;
+border-radius:10px;
+border:none;
+}
+
+button{
+background:#00b894;
+color:white;
+}
+
+#vysledek{
+margin-top:20px;
+padding:15px;
+background:#222;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Ceník OZ</h1>
+
+<input type="file" id="excelFile">
+
+<input type="text" id="searchInput" placeholder="Zadej číslo produktu">
+
+<button onclick="hledej()">Vyhledat</button>
+
+<div id="vysledek"></div>
+
+<script>
+
+let data = [];
+
+document.getElementById('excelFile').addEventListener('change', function(e){
+
+const file = e.target.files[0];
+const reader = new FileReader();
+
+reader.onload = function(event){
+
+const workbook = XLSX.read(event.target.result, {type:'binary'});
+
+const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+data = XLSX.utils.sheet_to_json(sheet);
+
+alert("Excel načten");
+
+};
+
+reader.readAsBinaryString(file);
+
+});
+
+function hledej(){
+
+const hledat = document.getElementById('searchInput').value.toLowerCase();
+
+const vysledek = data.find(row =>
+JSON.stringify(row).toLowerCase().includes(hledat)
+);
+
+if(vysledek){
+
+document.getElementById('vysledek').innerHTML =
+"<pre>" + JSON.stringify(vysledek,null,2) + "</pre>";
+
+}else{
+
+document.getElementById('vysledek').innerHTML =
+"Nenalezeno";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
