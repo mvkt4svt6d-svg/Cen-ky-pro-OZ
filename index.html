@@ -19,15 +19,17 @@ body{
 
 h1{
     text-align:center;
+    margin-bottom:25px;
 }
 
+select,
 input{
     width:100%;
     padding:15px;
     font-size:20px;
     border:none;
     border-radius:12px;
-    margin-top:20px;
+    margin-top:15px;
 }
 
 button{
@@ -63,6 +65,11 @@ button{
 
 <h1>Ceník OZ</h1>
 
+<select id="cenik">
+    <option value="HW">HW ceník</option>
+    <option value="RECA">RECA ceník</option>
+</select>
+
 <input
 type="text"
 id="searchInput"
@@ -73,14 +80,17 @@ Vyhledat
 </button>
 
 <div id="vysledek">
-Načítám ceník...
+Načítám ceníky...
 </div>
 
 <script>
 
-let data = [];
+let hwData = [];
+let recaData = [];
 
-fetch('Exportpreisliste HW 2025 Q3.xlsx')
+Promise.all([
+
+fetch('Exportní cena HW 2025 Q3.xlsx')
 .then(response => response.arrayBuffer())
 .then(dataBuffer => {
 
@@ -88,12 +98,43 @@ const workbook = XLSX.read(dataBuffer, {type:'array'});
 
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-data = XLSX.utils.sheet_to_json(sheet, {header:1});
+hwData = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+}),
+
+fetch('RECA netto Q1 2026.xlsx')
+.then(response => response.arrayBuffer())
+.then(dataBuffer => {
+
+const workbook = XLSX.read(dataBuffer, {type:'array'});
+
+const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+recaData = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+})
+
+]).then(() => {
 
 document.getElementById('vysledek').innerHTML =
-"Ceník načten";
+"Ceníky načteny";
 
 });
+
+function formatCena(cena){
+
+cena = Number(cena);
+
+if(isNaN(cena)){
+    return "-";
+}
+
+return cena.toLocaleString('cs-CZ', {
+minimumFractionDigits: 2,
+maximumFractionDigits: 2
+}) + " Kč";
+
+}
 
 function hledej(){
 
@@ -103,7 +144,17 @@ document.getElementById('searchInput')
 .replace(/\s/g,'')
 .toLowerCase();
 
+const typCeniku =
+document.getElementById('cenik').value;
+
+let data = [];
 let nalezeno = null;
+
+if(typCeniku === "HW"){
+    data = hwData;
+}else{
+    data = recaData;
+}
 
 for(let i = 0; i < data.length; i++){
 
@@ -125,29 +176,20 @@ break;
 
 }
 
-if(nalezeno){
+if(!nalezeno){
 
-const nazev = nalezeno[1] || "-";
-const cenovaJednotka = nalezeno[2] || "-";
+document.getElementById('vysledek').innerHTML =
+"Nenalezeno";
 
-let cenaCZK = nalezeno[5] || 0;
-
-cenaCZK = Number(cenaCZK);
-
-if(!isNaN(cenaCZK)){
-
-cenaCZK =
-cenaCZK.toLocaleString('cs-CZ', {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-}) + " Kč";
-
-}else{
-
-cenaCZK = "-";
+return;
 
 }
 
+if(typCeniku === "HW"){
+
+const nazev = nalezeno[1] || "-";
+const cenovaJednotka = nalezeno[2] || "-";
+const cenaCZK = formatCena(nalezeno[5]);
 const baleni = nalezeno[7] || "-";
 
 document.getElementById('vysledek').innerHTML =
@@ -182,8 +224,24 @@ ${baleni}
 
 }else{
 
+const nazev = nalezeno[1] || "-";
+const cenaCZK = formatCena(nalezeno[2]);
+
 document.getElementById('vysledek').innerHTML =
-"Nenalezeno";
+
+`
+<div>
+<span class="label">Název produktu:</span><br>
+${nazev}
+</div>
+
+<br>
+
+<div>
+<span class="label">Cena CZK:</span><br>
+${cenaCZK}
+</div>
+`;
 
 }
 
