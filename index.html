@@ -66,8 +66,8 @@ button{
 <h1>Ceník OZ</h1>
 
 <select id="cenik">
-    <option value="HW">HW ceník</option>
-    <option value="RECA">Milwaukee / RECA</option>
+    <option value="RECA">RECA</option>
+    <option value="MILWAUKEE">MILWAUKEE</option>
 </select>
 
 <input
@@ -85,28 +85,13 @@ Načítám ceníky...
 
 <script>
 
-let hwData = [];
 let recaData = [];
+let milwaukeeData = [];
 
 async function nactiCeniky(){
 
-const hwResponse =
-await fetch('Exportní cena HW 2025 Q3.xlsx');
-
-const hwBuffer =
-await hwResponse.arrayBuffer();
-
-const hwWorkbook =
-XLSX.read(hwBuffer, {type:'array'});
-
-const hwSheet =
-hwWorkbook.Sheets[hwWorkbook.SheetNames[0]];
-
-hwData =
-XLSX.utils.sheet_to_json(hwSheet, {header:1});
-
 const recaResponse =
-await fetch('RECA netto Q1 2026.xlsx');
+await fetch('Exportní cena HW 2025 Q3.xlsx');
 
 const recaBuffer =
 await recaResponse.arrayBuffer();
@@ -119,6 +104,21 @@ recaWorkbook.Sheets[recaWorkbook.SheetNames[0]];
 
 recaData =
 XLSX.utils.sheet_to_json(recaSheet, {header:1});
+
+const milwaukeeResponse =
+await fetch('RECA netto Q1 2026.xlsx');
+
+const milwaukeeBuffer =
+await milwaukeeResponse.arrayBuffer();
+
+const milwaukeeWorkbook =
+XLSX.read(milwaukeeBuffer, {type:'array'});
+
+const milwaukeeSheet =
+milwaukeeWorkbook.Sheets[milwaukeeWorkbook.SheetNames[0]];
+
+milwaukeeData =
+XLSX.utils.sheet_to_json(milwaukeeSheet, {header:1});
 
 document.getElementById('vysledek').innerHTML =
 "Ceníky načteny";
@@ -155,10 +155,10 @@ document.getElementById('cenik').value;
 
 let data = [];
 
-if(typ === "HW"){
-    data = hwData;
-}else{
+if(typ === "RECA"){
     data = recaData;
+}else{
+    data = milwaukeeData;
 }
 
 let nalezeno = null;
@@ -194,7 +194,7 @@ return;
 
 }
 
-if(typ === "HW"){
+if(typ === "RECA"){
 
 const nazev = nalezeno[1] || "-";
 const jednotka = nalezeno[2] || "-";
