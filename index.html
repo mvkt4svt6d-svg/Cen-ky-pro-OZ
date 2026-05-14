@@ -3,38 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Ceník OZ</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
+
 body{
-font-family:Arial;
-padding:20px;
-background:#111;
-color:white;
+    background:#111;
+    color:white;
+    font-family:Arial;
+    padding:20px;
 }
 
-input,button{
-padding:12px;
-font-size:18px;
-margin:10px 0;
-width:100%;
-border-radius:10px;
-border:none;
+h1{
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    margin-top:20px;
 }
 
 button{
-background:#00b894;
-color:white;
+    width:100%;
+    padding:15px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    margin-top:15px;
+    background:#00b894;
+    color:white;
+    font-weight:bold;
 }
 
 #vysledek{
-margin-top:20px;
-padding:15px;
-background:#222;
-border-radius:10px;
+    margin-top:25px;
+    background:#222;
+    padding:20px;
+    border-radius:15px;
+    font-size:20px;
+    line-height:1.8;
 }
+
+.label{
+    color:#00cec9;
+    font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -42,51 +63,97 @@ border-radius:10px;
 
 <h1>Ceník OZ</h1>
 
-<input type="file" id="excelFile">
+<input
+type="text"
+id="searchInput"
+placeholder="Zadej číslo produktu">
 
-<input type="text" id="searchInput" placeholder="Zadej číslo produktu">
+<button onclick="hledej()">
+Vyhledat
+</button>
 
-<button onclick="hledej()">Vyhledat</button>
-
-<div id="vysledek"></div>
+<div id="vysledek">
+Načítám ceník...
+</div>
 
 <script>
 
 let data = [];
 
-document.getElementById('excelFile').addEventListener('change', function(e){
+fetch('Exportní cena HW 2025 Q3.xlsx')
+.then(response => response.arrayBuffer())
+.then(dataBuffer => {
 
-const file = e.target.files[0];
-const reader = new FileReader();
-
-reader.onload = function(event){
-
-const workbook = XLSX.read(event.target.result, {type:'binary'});
+const workbook = XLSX.read(dataBuffer, {type:'array'});
 
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-data = XLSX.utils.sheet_to_json(sheet);
+data = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-alert("Excel načten");
-
-};
-
-reader.readAsBinaryString(file);
+document.getElementById('vysledek').innerHTML =
+"Ceník načten";
 
 });
 
 function hledej(){
 
-const hledat = document.getElementById('searchInput').value.toLowerCase();
+const hledat =
+document.getElementById('searchInput')
+.value
+.toLowerCase();
 
-const vysledek = data.find(row =>
-JSON.stringify(row).toLowerCase().includes(hledat)
-);
+let nalezeno = null;
 
-if(vysledek){
+for(let i = 0; i < data.length; i++){
+
+const row = data[i];
+
+if(row[0] &&
+row[0].toString().toLowerCase().includes(hledat)){
+
+nalezeno = row;
+break;
+
+}
+
+}
+
+if(nalezeno){
+
+const nazev = nalezeno[1] || "-";
+const cenovaJednotka = nalezeno[2] || "-";
+const cenaCZK = nalezeno[5] || "-";
+const baleni = nalezeno[7] || "-";
 
 document.getElementById('vysledek').innerHTML =
-"<pre>" + JSON.stringify(vysledek,null,2) + "</pre>";
+
+`
+<div>
+<span class="label">Název produktu:</span><br>
+${nazev}
+</div>
+
+<br>
+
+<div>
+<span class="label">Cena CZK:</span><br>
+${cenaCZK}
+</div>
+
+<br>
+
+<div>
+<span class="label">Cenová jednotka:</span><br>
+${cenovaJednotka}
+</div>
+
+<br>
+
+<div>
+<span class="label">Počet ks v balení:</span><br>
+${baleni}
+</div>
+`;
 
 }else{
 
