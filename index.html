@@ -67,7 +67,7 @@ button{
 
 <select id="cenik">
     <option value="HW">HW ceník</option>
-    <option value="RECA">RECA ceník</option>
+    <option value="RECA">Milwaukee / RECA</option>
 </select>
 
 <input
@@ -88,38 +88,44 @@ Načítám ceníky...
 let hwData = [];
 let recaData = [];
 
-Promise.all([
+async function nactiCeniky(){
 
-fetch('Exportní cena HW 2025 Q3.xlsx')
-.then(response => response.arrayBuffer())
-.then(dataBuffer => {
+const hwResponse =
+await fetch('Exportní cena HW 2025 Q3.xlsx');
 
-const workbook = XLSX.read(dataBuffer, {type:'array'});
+const hwBuffer =
+await hwResponse.arrayBuffer();
 
-const sheet = workbook.Sheets[workbook.SheetNames[0]];
+const hwWorkbook =
+XLSX.read(hwBuffer, {type:'array'});
 
-hwData = XLSX.utils.sheet_to_json(sheet, {header:1});
+const hwSheet =
+hwWorkbook.Sheets[hwWorkbook.SheetNames[0]];
 
-}),
+hwData =
+XLSX.utils.sheet_to_json(hwSheet, {header:1});
 
-fetch('RECA netto Q1 2026.xlsx')
-.then(response => response.arrayBuffer())
-.then(dataBuffer => {
+const recaResponse =
+await fetch('RECA netto Q1 2026.xlsx');
 
-const workbook = XLSX.read(dataBuffer, {type:'array'});
+const recaBuffer =
+await recaResponse.arrayBuffer();
 
-const sheet = workbook.Sheets[workbook.SheetNames[0]];
+const recaWorkbook =
+XLSX.read(recaBuffer, {type:'array'});
 
-recaData = XLSX.utils.sheet_to_json(sheet, {header:1});
+const recaSheet =
+recaWorkbook.Sheets[recaWorkbook.SheetNames[0]];
 
-})
-
-]).then(() => {
+recaData =
+XLSX.utils.sheet_to_json(recaSheet, {header:1});
 
 document.getElementById('vysledek').innerHTML =
 "Ceníky načteny";
 
-});
+}
+
+nactiCeniky();
 
 function formatCena(cena){
 
@@ -130,8 +136,8 @@ if(isNaN(cena)){
 }
 
 return cena.toLocaleString('cs-CZ', {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
+minimumFractionDigits:2,
+maximumFractionDigits:2
 }) + " Kč";
 
 }
@@ -144,30 +150,33 @@ document.getElementById('searchInput')
 .replace(/\s/g,'')
 .toLowerCase();
 
-const typCeniku =
+const typ =
 document.getElementById('cenik').value;
 
 let data = [];
-let nalezeno = null;
 
-if(typCeniku === "HW"){
+if(typ === "HW"){
     data = hwData;
 }else{
     data = recaData;
 }
 
+let nalezeno = null;
+
 for(let i = 0; i < data.length; i++){
 
 const row = data[i];
 
-if(
-row[0] &&
-row[0]
-.toString()
+if(!row || row.length === 0){
+    continue;
+}
+
+const kod =
+String(row[0] || "")
 .replace(/\s/g,'')
-.toLowerCase()
-.includes(hledat)
-){
+.toLowerCase();
+
+if(kod.includes(hledat)){
 
 nalezeno = row;
 break;
@@ -185,11 +194,11 @@ return;
 
 }
 
-if(typCeniku === "HW"){
+if(typ === "HW"){
 
 const nazev = nalezeno[1] || "-";
-const cenovaJednotka = nalezeno[2] || "-";
-const cenaCZK = formatCena(nalezeno[5]);
+const jednotka = nalezeno[2] || "-";
+const cena = formatCena(nalezeno[5]);
 const baleni = nalezeno[7] || "-";
 
 document.getElementById('vysledek').innerHTML =
@@ -204,14 +213,14 @@ ${nazev}
 
 <div>
 <span class="label">Cena CZK:</span><br>
-${cenaCZK}
+${cena}
 </div>
 
 <br>
 
 <div>
 <span class="label">Cenová jednotka:</span><br>
-${cenovaJednotka}
+${jednotka}
 </div>
 
 <br>
@@ -225,7 +234,7 @@ ${baleni}
 }else{
 
 const nazev = nalezeno[1] || "-";
-const cenaCZK = formatCena(nalezeno[2]);
+const cena = formatCena(nalezeno[2]);
 
 document.getElementById('vysledek').innerHTML =
 
@@ -239,7 +248,7 @@ ${nazev}
 
 <div>
 <span class="label">Cena CZK:</span><br>
-${cenaCZK}
+${cena}
 </div>
 `;
 
