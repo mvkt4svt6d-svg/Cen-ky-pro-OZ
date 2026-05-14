@@ -130,11 +130,22 @@ if(nalezeno){
 const nazev = nalezeno[1] || "-";
 const cenovaJednotka = nalezeno[2] || "-";
 
-let cenaCZK = nalezeno[5] || "-";
+let cenaCZK = nalezeno[5] || 0;
+
+cenaCZK = Number(cenaCZK);
 
 if(!isNaN(cenaCZK)){
-    cenaCZK = Number(cenaCZK).toFixed(2)
-    .replace(".", ",") + " Kč";
+
+cenaCZK =
+cenaCZK.toLocaleString('cs-CZ', {
+minimumFractionDigits: 2,
+maximumFractionDigits: 2
+}) + " Kč";
+
+}else{
+
+cenaCZK = "-";
+
 }
 
 const baleni = nalezeno[7] || "-";
