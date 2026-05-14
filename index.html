@@ -90,6 +90,7 @@ let milwaukeeData = [];
 
 async function nactiCeniky(){
 
+// RECA
 const recaResponse =
 await fetch('Exportní cena HW 2025 Q3.xlsx');
 
@@ -105,6 +106,7 @@ recaWorkbook.Sheets[recaWorkbook.SheetNames[0]];
 recaData =
 XLSX.utils.sheet_to_json(recaSheet, {header:1});
 
+// MILWAUKEE
 const milwaukeeResponse =
 await fetch('RECA netto Q1 2026.xlsx');
 
@@ -154,14 +156,13 @@ const typ =
 document.getElementById('cenik').value;
 
 let data = [];
+let nalezeno = null;
 
 if(typ === "RECA"){
     data = recaData;
 }else{
     data = milwaukeeData;
 }
-
-let nalezeno = null;
 
 for(let i = 0; i < data.length; i++){
 
@@ -194,6 +195,7 @@ return;
 
 }
 
+// RECA
 if(typ === "RECA"){
 
 const nazev = nalezeno[1] || "-";
@@ -231,7 +233,10 @@ ${baleni}
 </div>
 `;
 
-}else{
+}
+
+// MILWAUKEE
+else{
 
 const nazev = nalezeno[1] || "-";
 const cena = formatCena(nalezeno[2]);
