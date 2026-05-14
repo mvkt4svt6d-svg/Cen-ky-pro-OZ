@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ceník OZ</title>
+<title>RECA Ceník</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -22,7 +22,6 @@ h1{
     margin-bottom:25px;
 }
 
-select,
 input{
     width:100%;
     padding:15px;
@@ -63,12 +62,7 @@ button{
 
 <body>
 
-<h1>Ceník OZ</h1>
-
-<select id="cenik">
-    <option value="RECA">RECA</option>
-    <option value="MILWAUKEE">MILWAUKEE</option>
-</select>
+<h1>RECA Ceník</h1>
 
 <input
 type="text"
@@ -80,54 +74,36 @@ Vyhledat
 </button>
 
 <div id="vysledek">
-Načítám ceníky...
+Načítám ceník...
 </div>
 
 <script>
 
-let recaData = [];
-let milwaukeeData = [];
+let data = [];
 
-async function nactiCeniky(){
+async function nactiCenik(){
 
-// RECA
-const recaResponse =
+const response =
 await fetch('Exportní cena HW 2025 Q3.xlsx');
 
-const recaBuffer =
-await recaResponse.arrayBuffer();
+const buffer =
+await response.arrayBuffer();
 
-const recaWorkbook =
-XLSX.read(recaBuffer, {type:'array'});
+const workbook =
+XLSX.read(buffer, {type:'array'});
 
-const recaSheet =
-recaWorkbook.Sheets[recaWorkbook.SheetNames[0]];
+const sheet =
+workbook.Sheets[workbook.SheetNames[0]];
 
-recaData =
-XLSX.utils.sheet_to_json(recaSheet, {header:1});
-
-// MILWAUKEE
-const milwaukeeResponse =
-await fetch('RECA netto Q1 2026.xlsx');
-
-const milwaukeeBuffer =
-await milwaukeeResponse.arrayBuffer();
-
-const milwaukeeWorkbook =
-XLSX.read(milwaukeeBuffer, {type:'array'});
-
-const milwaukeeSheet =
-milwaukeeWorkbook.Sheets[milwaukeeWorkbook.SheetNames[0]];
-
-milwaukeeData =
-XLSX.utils.sheet_to_json(milwaukeeSheet, {header:1});
+data =
+XLSX.utils.sheet_to_json(sheet, {header:1});
 
 document.getElementById('vysledek').innerHTML =
-"Ceníky načteny";
+"Ceník načten";
 
 }
 
-nactiCeniky();
+nactiCenik();
 
 function formatCena(cena){
 
@@ -149,20 +125,20 @@ function hledej(){
 const hledat =
 document.getElementById('searchInput')
 .value
+.trim()
 .replace(/\s/g,'')
 .toLowerCase();
 
-const typ =
-document.getElementById('cenik').value;
+if(hledat === ""){
 
-let data = [];
-let nalezeno = null;
+document.getElementById('vysledek').innerHTML =
+"Zadej číslo produktu";
 
-if(typ === "RECA"){
-    data = recaData;
-}else{
-    data = milwaukeeData;
+return;
+
 }
+
+let nalezeno = null;
 
 for(let i = 0; i < data.length; i++){
 
@@ -177,7 +153,7 @@ String(row[0] || "")
 .replace(/\s/g,'')
 .toLowerCase();
 
-if(kod.includes(hledat)){
+if(kod === hledat){
 
 nalezeno = row;
 break;
@@ -194,9 +170,6 @@ document.getElementById('vysledek').innerHTML =
 return;
 
 }
-
-// RECA
-if(typ === "RECA"){
 
 const nazev = nalezeno[1] || "-";
 const jednotka = nalezeno[2] || "-";
@@ -232,32 +205,6 @@ ${jednotka}
 ${baleni}
 </div>
 `;
-
-}
-
-// MILWAUKEE
-else{
-
-const nazev = nalezeno[1] || "-";
-const cena = formatCena(nalezeno[2]);
-
-document.getElementById('vysledek').innerHTML =
-
-`
-<div>
-<span class="label">Název produktu:</span><br>
-${nazev}
-</div>
-
-<br>
-
-<div>
-<span class="label">Cena CZK:</span><br>
-${cena}
-</div>
-`;
-
-}
 
 }
 
