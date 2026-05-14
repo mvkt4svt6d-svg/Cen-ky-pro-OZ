@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>RECA Ceník</title>
+<title>Ceník</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -29,6 +29,7 @@ input{
     border:none;
     border-radius:12px;
     margin-top:15px;
+    box-sizing:border-box;
 }
 
 button{
@@ -62,7 +63,7 @@ button{
 
 <body>
 
-<h1>RECA Ceník</h1>
+<h1>Ceník</h1>
 
 <input
 type="text"
@@ -84,13 +85,15 @@ let data = [];
 async function nactiCenik(){
 
 const response =
-await fetch('Exportní cena HW 2025 Q3.xlsx');
+await fetch('Exportpreisliste HW 2025 Q3.ods');
 
 const buffer =
 await response.arrayBuffer();
 
 const workbook =
-XLSX.read(buffer, {type:'array'});
+XLSX.read(buffer, {
+type:'array'
+});
 
 const sheet =
 workbook.Sheets[workbook.SheetNames[0]];
