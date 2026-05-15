@@ -87,7 +87,7 @@ async function nactiCenik(){
 try{
 
 const response =
-await fetch('Reca ceník malý.ods');
+await fetch('Reca cenik.ods');
 
 const buffer =
 await response.arrayBuffer();
@@ -111,7 +111,7 @@ document.getElementById('vysledek').innerHTML =
 }catch(error){
 
 document.getElementById('vysledek').innerHTML =
-"Chyba načítání ceníku";
+"Chyba při načítání ceníku";
 
 }
 
