@@ -42,6 +42,7 @@ button{
     background:#11d1b0;
     color:white;
     margin-bottom:30px;
+    cursor:pointer;
 }
 
 #vysledek{
@@ -108,14 +109,14 @@ function vyhledat(){
     const hledane =
     document.getElementById("hledat")
     .value
-    .replace(/\s/g,"")
+    .replaceAll(" ","")
     .trim();
 
     const produkt = cenik.find(p => {
 
         const artikl =
         String(p.artikl)
-        .replace(/\s/g,"")
+        .replaceAll(" ","")
         .trim();
 
         return artikl === hledane;
