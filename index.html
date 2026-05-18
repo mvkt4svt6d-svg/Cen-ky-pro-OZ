@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Ceník</title>
 
 <style>
-
 body{
     background:#111;
     color:white;
@@ -17,45 +15,45 @@ body{
 
 h1{
     text-align:center;
-    margin-bottom:25px;
+    margin-bottom:40px;
+    font-size:56px;
 }
 
 input{
     width:100%;
-    padding:15px;
-    font-size:20px;
+    padding:20px;
+    font-size:32px;
+    border-radius:20px;
     border:none;
-    border-radius:12px;
-    margin-top:15px;
+    margin-bottom:20px;
     box-sizing:border-box;
 }
 
 button{
     width:100%;
-    padding:15px;
-    font-size:20px;
-    border:none;
-    border-radius:12px;
-    margin-top:15px;
-    background:#00b894;
-    color:white;
+    padding:20px;
+    font-size:32px;
     font-weight:bold;
+    border:none;
+    border-radius:20px;
+    background:#12d6b0;
+    color:white;
+    margin-bottom:30px;
 }
 
 #vysledek{
-    margin-top:25px;
-    background:#222;
-    padding:20px;
-    border-radius:15px;
-    font-size:20px;
+    background:#1e1e1e;
+    border-radius:25px;
+    padding:25px;
     line-height:1.8;
+    font-size:30px;
 }
 
-.label{
-    color:#00cec9;
+.nadpis{
+    color:#18d9ff;
     font-weight:bold;
+    margin-top:20px;
 }
-
 </style>
 </head>
 
@@ -63,135 +61,62 @@ button{
 
 <h1>Ceník</h1>
 
-<input
-type="text"
-id="searchInput"
-placeholder="Zadej číslo produktu">
+<input type="text" id="hledat" placeholder="Zadej číslo artiklu">
 
-<button onclick="hledej()">
-Vyhledat
-</button>
+<button onclick="vyhledat()">Vyhledat</button>
 
-<div id="vysledek">
-Načítám data...
-</div>
+<div id="vysledek">Načítám ceník...</div>
 
 <script>
 
-let data = [];
+let cenik = [];
 
-async function nactiData(){
+fetch("reca_cenik.json")
+.then(res => res.json())
+.then(data => {
+    cenik = data;
+    document.getElementById("vysledek").innerHTML = "Ceník připraven";
+});
 
-try{
+function vyhledat(){
 
-const response =
-await fetch('reca_cenik.json');
+    const hledane = document
+        .getElementById("hledat")
+        .value
+        .replace(/\s/g,"")
+        .trim();
 
-data =
-await response.json();
+    const produkt = cenik.find(p =>
+        p.artikl === hledane
+    );
 
-document.getElementById('vysledek').innerHTML =
-"Ceník připraven";
+    const vysledek = document.getElementById("vysledek");
 
-}catch(error){
+    if(produkt){
 
-document.getElementById('vysledek').innerHTML =
-"Chyba načítání dat";
+        vysledek.innerHTML = `
+            <div class="nadpis">Číslo artiklu:</div>
+            ${produkt.artikl}
 
+            <div class="nadpis">Název:</div>
+            ${produkt.nazev}
+
+            <div class="nadpis">Cena:</div>
+            ${Number(produkt.cena).toLocaleString('cs-CZ',{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            })} Kč
+
+            <div class="nadpis">Cenová jednotka:</div>
+            ${produkt.jednotka}
+        `;
+
+    } else {
+
+        vysledek.innerHTML = "Produkt nenalezen";
+
+    }
 }
-
-}
-
-nactiData();
-
-function formatCena(cena){
-
-if(cena === null || cena === undefined){
-    return "-";
-}
-
-return Number(cena).toLocaleString('cs-CZ',{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-}) + " Kč";
-
-}
-
-function hledej(){
-
-const hledat =
-document.getElementById('searchInput')
-.value
-.trim()
-.replace(/\s/g,'')
-.toLowerCase();
-
-if(hledat === ""){
-
-document.getElementById('vysledek').innerHTML =
-"Zadej číslo produktu";
-
-return;
-
-}
-
-const nalezeno =
-data.find(item =>
-item.kod
-.replace(/\s/g,'')
-.toLowerCase()
-.includes(hledat)
-);
-
-if(!nalezeno){
-
-document.getElementById('vysledek').innerHTML =
-"Nenalezeno";
-
-return;
-
-}
-
-document.getElementById('vysledek').innerHTML =
-
-`
-<div>
-<span class="label">
-Název produktu:
-</span><br>
-${nalezeno.nazev || "-"}
-</div>
-
-<br>
-
-<div>
-<span class="label">
-Cena CZK:
-</span><br>
-${formatCena(nalezeno.cena)}
-</div>
-
-<br>
-
-<div>
-<span class="label">
-Cenová jednotka:
-</span><br>
-${nalezeno.jednotka || "-"}
-</div>
-
-<br>
-
-<div>
-<span class="label">
-Počet ks v balení:
-</span><br>
-${nalezeno.baleni || "-"}
-</div>
-`;
-
-}
-
 </script>
 
 </body>
