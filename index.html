@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ceník</title>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:40px;
+    font-size:56px;
+}
+
+input{
+    width:100%;
+    padding:20px;
+    font-size:32px;
+    border-radius:20px;
+    border:none;
+    margin-bottom:20px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:20px;
+    font-size:32px;
+    font-weight:bold;
+    border:none;
+    border-radius:20px;
+    background:#12d6b0;
+    color:white;
+    margin-bottom:30px;
+}
+
+#vysledek{
+    background:#1e1e1e;
+    border-radius:25px;
+    padding:25px;
+    line-height:1.8;
+    font-size:30px;
+}
+
+.nadpis{
+    color:#18d9ff;
+    font-weight:bold;
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Ceník</h1>
+
+<input type="text" id="hledat" placeholder="Zadej číslo artiklu">
+
+<button onclick="vyhledat()">Vyhledat</button>
+
+<div id="vysledek">Načítám ceník...</div>
+
+<script>
+
+let cenik = [];
+
+fetch("reca_cenik.json")
+.then(res => res.json())
+.then(data => {
+    cenik = data;
+    document.getElementById("vysledek").innerHTML = "Ceník připraven";
+});
+
+function vyhledat(){
+
+    const hledane = document
+        .getElementById("hledat")
+        .value
+        .replace(/\s/g,"")
+        .trim();
+
+    const produkt = cenik.find(p =>
+        p.artikl === hledane
+    );
+
+    const vysledek = document.getElementById("vysledek");
+
+    if(produkt){
+
+        vysledek.innerHTML = `
+            <div class="nadpis">Číslo artiklu:</div>
+            ${produkt.artikl}
+
+            <div class="nadpis">Název:</div>
+            ${produkt.nazev}
+
+            <div class="nadpis">Cena:</div>
+            ${Number(produkt.cena).toLocaleString('cs-CZ',{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            })} Kč
+
+            <div class="nadpis">Cenová jednotka:</div>
+            ${produkt.jednotka}
+        `;
+
+    } else {
+
+        vysledek.innerHTML = "Produkt nenalezen";
+
+    }
+}
+</script>
+
+</body>
+</html>
