@@ -6,8 +6,6 @@
 
 <title>Ceník</title>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <style>
 
 body{
@@ -75,64 +73,44 @@ Vyhledat
 </button>
 
 <div id="vysledek">
-Načítám ceník...
+Načítám data...
 </div>
 
 <script>
 
 let data = [];
 
-async function nactiCenik(){
+async function nactiData(){
 
 try{
 
 const response =
-await fetch('Reca cenik.ods');
-
-const buffer =
-await response.arrayBuffer();
-
-const workbook =
-XLSX.read(buffer,{
-type:'array'
-});
-
-const sheet =
-workbook.Sheets[workbook.SheetNames[0]];
+await fetch('reca_cenik.json');
 
 data =
-XLSX.utils.sheet_to_json(sheet,{
-header:1
-});
+await response.json();
 
 document.getElementById('vysledek').innerHTML =
-"Ceník načten";
+"Ceník připraven";
 
 }catch(error){
 
 document.getElementById('vysledek').innerHTML =
-"Chyba při načítání ceníku";
+"Chyba načítání dat";
 
 }
 
 }
 
-nactiCenik();
+nactiData();
 
 function formatCena(cena){
 
-cena =
-String(cena)
-.replace(",", ".");
-
-cena =
-parseFloat(cena);
-
-if(isNaN(cena)){
+if(cena === null || cena === undefined){
     return "-";
 }
 
-return cena.toLocaleString('cs-CZ',{
+return Number(cena).toLocaleString('cs-CZ',{
 minimumFractionDigits:2,
 maximumFractionDigits:2
 }) + " Kč";
@@ -157,29 +135,13 @@ return;
 
 }
 
-let nalezeno = null;
-
-for(let i = 1; i < data.length; i++){
-
-const row = data[i];
-
-if(!row){
-    continue;
-}
-
-const kod =
-String(row[0] || "")
+const nalezeno =
+data.find(item =>
+item.kod
 .replace(/\s/g,'')
-.toLowerCase();
-
-if(kod.includes(hledat)){
-
-nalezeno = row;
-break;
-
-}
-
-}
+.toLowerCase()
+.includes(hledat)
+);
 
 if(!nalezeno){
 
@@ -190,15 +152,6 @@ return;
 
 }
 
-const nazev =
-nalezeno[1] || "-";
-
-const jednotka =
-nalezeno[2] || "-";
-
-const cena =
-formatCena(nalezeno[3]);
-
 document.getElementById('vysledek').innerHTML =
 
 `
@@ -206,7 +159,7 @@ document.getElementById('vysledek').innerHTML =
 <span class="label">
 Název produktu:
 </span><br>
-${nazev}
+${nalezeno.nazev || "-"}
 </div>
 
 <br>
@@ -215,7 +168,7 @@ ${nazev}
 <span class="label">
 Cena CZK:
 </span><br>
-${cena}
+${formatCena(nalezeno.cena)}
 </div>
 
 <br>
@@ -224,7 +177,16 @@ ${cena}
 <span class="label">
 Cenová jednotka:
 </span><br>
-${jednotka}
+${nalezeno.jednotka || "-"}
+</div>
+
+<br>
+
+<div>
+<span class="label">
+Počet ks v balení:
+</span><br>
+${nalezeno.baleni || "-"}
 </div>
 `;
 
