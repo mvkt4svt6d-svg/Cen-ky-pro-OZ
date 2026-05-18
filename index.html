@@ -42,7 +42,6 @@ button{
     background:#11d1b0;
     color:white;
     margin-bottom:30px;
-    cursor:pointer;
 }
 
 #vysledek{
@@ -109,17 +108,21 @@ function vyhledat(){
     const hledane =
     document.getElementById("hledat")
     .value
-    .replaceAll(" ","")
+    .replace(/\s/g,"")
     .trim();
+
+    if(!hledane){
+        return;
+    }
 
     const produkt = cenik.find(p => {
 
         const artikl =
         String(p.artikl)
-        .replaceAll(" ","")
+        .replace(/\s/g,"")
         .trim();
 
-        return artikl === hledane;
+        return artikl.includes(hledane);
 
     });
 
@@ -127,6 +130,13 @@ function vyhledat(){
     document.getElementById("vysledek");
 
     if(produkt){
+
+        const cena =
+        Number(produkt.cena)
+        .toLocaleString("cs-CZ",{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
 
         vysledek.innerHTML = `
 
@@ -146,10 +156,7 @@ function vyhledat(){
         Cena:
         </div>
 
-        ${Number(produkt.cena).toLocaleString("cs-CZ",{
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
-        })} Kč
+        ${cena} Kč
 
         <div class="nadpis">
         Cenová jednotka:
